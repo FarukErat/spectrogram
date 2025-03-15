@@ -1,48 +1,72 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.io.wavfile as wav
-from scipy.signal import butter, filtfilt
+from scipy.io import wavfile
+from scipy.signal import spectrogram
+import os
 
-def bandpass_filter(data, sample_rate, min_hz=0, max_hz=10000, order=5):
-    nyquist = 0.5 * sample_rate
-    low = min_hz / nyquist
-    high = max_hz / nyquist
+def save_spectrogram(filename, output_file, min_hz=None, max_hz=None,
+                    min_db=None, max_db=None, dpi=100, format=None):
+    """
+    Save a spectrogram of a WAV file to an image file with customizable ranges.
 
-    if min_hz == 0:
-        b, a = butter(order, high, btype='low')
-    elif max_hz >= nyquist:
-        b, a = butter(order, low, btype='high')
-    else:
-        b, a = butter(order, [low, high], btype='band')
+    Parameters:
+        filename (str): Path to the input WAV file
+        output_file (str): Path for the output image file
+        min_hz (float): Minimum frequency to display (default: 0 Hz)
+        max_hz (float): Maximum frequency to display (default: Nyquist frequency)
+        min_db (float): Minimum amplitude in dB (default: actual minimum in data)
+        max_db (float): Maximum amplitude in dB (default: actual maximum in data)
+        dpi (int): Image resolution (dots per inch)
+        format (str): Image format (inferred from extension if None)
+    """
+    # Read WAV file
+    sample_rate, data = wavfile.read(filename)
 
-    return filtfilt(b, a, data)
+    # Convert stereo to mono
+    if len(data.shape) == 2:
+        data = data.mean(axis=1)
 
-def save_spectrogram_image(wav_file, output_image, min_hz=0, max_hz=10000, min_db=-80, max_db=0):
-    sample_rate, data = wav.read(wav_file)
+    # Compute spectrogram
+    nperseg = 1024  # Window size
+    noverlap = nperseg // 2  # Overlap between windows
+    f, t, Sxx = spectrogram(data, fs=sample_rate, nperseg=nperseg,
+                            noverlap=noverlap, window='hann')
 
-    if len(data.shape) > 1:
-        data = np.mean(data, axis=1)
+    # Convert to dB scale
+    Sxx_db = 10 * np.log10(Sxx)
 
-    filtered_data = bandpass_filter(data, sample_rate, min_hz, max_hz)
+    # Handle -infinity values from log10(0)
+    finite_vals = Sxx_db[np.isfinite(Sxx_db)]
+    if finite_vals.size == 0:
+        raise ValueError("All amplitude values are zero in the spectrogram")
+    Sxx_db = np.clip(Sxx_db, a_min=finite_vals.min(), a_max=None)
 
-    plt.figure(figsize=(10, 5))
-    _, _, _, im = plt.specgram(
-        filtered_data,
-        NFFT=1024,
-        Fs=sample_rate,
-        cmap='inferno',
-        noverlap=512,
-        vmin=min_db,
-        vmax=max_db
-    )
+    # Set default frequency range
+    min_hz = 0 if min_hz is None else min_hz
+    max_hz = sample_rate / 2 if max_hz is None else max_hz
+
+    # Set default dB range
+    min_db = Sxx_db.min() if min_db is None else min_db
+    max_db = Sxx_db.max() if max_db is None else max_db
+
+    # Create plot
+    fig = plt.figure(figsize=(12, 6))
+    plt.imshow(Sxx_db, aspect='auto', origin='lower',
+              extent=[t.min(), t.max(), f.min(), f.max()],
+              vmin=min_db, vmax=max_db, cmap='inferno')
 
     plt.ylim(min_hz, max_hz)
-    plt.xlabel('Time (s)')
-    plt.ylabel('Frequency (Hz)')
-    plt.title(f'Spectrogram ({min_hz}-{max_hz} Hz)')
-    plt.colorbar(im, label='Intensity (dB)')
+    plt.xlabel('Time [s]')
+    plt.ylabel('Frequency [Hz]')
+    cbar = plt.colorbar()
+    cbar.set_label('Intensity [dB]')
 
-    plt.savefig(output_image, dpi=300, bbox_inches='tight')
-    plt.close()
+    plt.title(f"Spectrogram of {os.path.basename(filename)}")
+    plt.tight_layout()
 
-save_spectrogram_image('record.wav', 'spectrogram.png', min_hz=0, max_hz=2000, min_db=0, max_db=50)
+    # Save to file instead of displaying
+    plt.savefig(output_file, bbox_inches='tight', dpi=dpi, format=format)
+    plt.close(fig)
+
+# Example usage:
+save_spectrogram("record.wav", "spectrogram.png", max_hz=2500, min_db=0)
