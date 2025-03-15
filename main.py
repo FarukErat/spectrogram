@@ -69,4 +69,4 @@ def save_spectrogram(filename, output_file, min_hz=None, max_hz=None,
     plt.close(fig)
 
 # Example usage:
-save_spectrogram("record.wav", "spectrogram.png", max_hz=2500, min_db=0)
+save_spectrogram("record.wav", "spectrogram.png", max_hz=2500, min_db=-30)
