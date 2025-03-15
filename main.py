@@ -6,19 +6,7 @@ import os
 
 def save_spectrogram(filename, output_file, min_hz=None, max_hz=None,
                     min_db=None, max_db=None, dpi=100, format=None):
-    """
-    Save a spectrogram of a WAV file to an image file with customizable ranges.
 
-    Parameters:
-        filename (str): Path to the input WAV file
-        output_file (str): Path for the output image file
-        min_hz (float): Minimum frequency to display (default: 0 Hz)
-        max_hz (float): Maximum frequency to display (default: Nyquist frequency)
-        min_db (float): Minimum amplitude in dB (default: actual minimum in data)
-        max_db (float): Maximum amplitude in dB (default: actual maximum in data)
-        dpi (int): Image resolution (dots per inch)
-        format (str): Image format (inferred from extension if None)
-    """
     # Read WAV file
     sample_rate, data = wavfile.read(filename)
 
