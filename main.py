@@ -17,7 +17,7 @@ def bandpass_filter(data, sample_rate, lowcut=0, highcut=10000, order=5):
 
     return filtfilt(b, a, data)
 
-def save_spectrogram_image(wav_file, output_image, lowcut=0, highcut=10000):
+def save_spectrogram_image(wav_file, output_image, lowcut=0, highcut=10000, db_min=-80, db_max=0):
     sample_rate, data = wav.read(wav_file)
 
     if len(data.shape) > 1:
@@ -26,7 +26,15 @@ def save_spectrogram_image(wav_file, output_image, lowcut=0, highcut=10000):
     filtered_data = bandpass_filter(data, sample_rate, lowcut, highcut)
 
     plt.figure(figsize=(10, 5))
-    _, _, _, im = plt.specgram(filtered_data, NFFT=1024, Fs=sample_rate, cmap='inferno', noverlap=512)
+    _, _, _, im = plt.specgram(
+        filtered_data,
+        NFFT=1024,
+        Fs=sample_rate,
+        cmap='inferno',
+        noverlap=512,
+        vmin=db_min,
+        vmax=db_max
+    )
 
     plt.ylim(lowcut, highcut)
     plt.xlabel('Time (s)')
@@ -37,4 +45,4 @@ def save_spectrogram_image(wav_file, output_image, lowcut=0, highcut=10000):
     plt.savefig(output_image, dpi=300, bbox_inches='tight')
     plt.close()
 
-save_spectrogram_image('record.wav', 'spectrogram.png', lowcut=0, highcut=8000)
+save_spectrogram_image('record.wav', 'spectrogram.png', lowcut=0, highcut=8000, db_min=0, db_max=50)
