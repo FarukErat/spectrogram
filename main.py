@@ -37,4 +37,4 @@ def save_spectrogram_image(wav_file, output_image, lowcut=0, highcut=10000):
     plt.savefig(output_image, dpi=300, bbox_inches='tight')
     plt.close()
 
-save_spectrogram_image('record.wav', 'spectrogram.png', lowcut=500, highcut=8000)
+save_spectrogram_image('record.wav', 'spectrogram.png', lowcut=0, highcut=8000)
