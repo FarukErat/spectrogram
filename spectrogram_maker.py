@@ -28,8 +28,8 @@ def draw_spectrogram(audio_file_path, image_file_path,
     # Calculate duration and frequency range
     duration = segment_times.max()
     freq_range = sample_frequencies.max() - sample_frequencies.min()
-    scale_time = 10  # 10 seconds per inch width
-    scale_freq = 1000  # 1000 Hz per inch height
+    scale_time = 1  # second per inch width
+    scale_freq = 2000  # Hz per inch height
     fig_width = duration / scale_time
     fig_height = freq_range / scale_freq
     fig_width = max(fig_width, 1)
@@ -50,4 +50,4 @@ def draw_spectrogram(audio_file_path, image_file_path,
     plt.close()
 
 if __name__ == '__main__':
-    draw_spectrogram('record.wav', 'spectrogram.png', max_hz=2500, min_db=-60)
+    draw_spectrogram('record.wav', 'spectrogram.png', max_hz=3000, min_db=-60)
