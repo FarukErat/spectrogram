@@ -21,7 +21,7 @@ def draw_spectrogram(audio_file_path, image_file_path,
     sample_frequencies = sample_frequencies[freq_mask]
     spectrogram_data_db = spectrogram_data_db[freq_mask, :]
 
-    # apply power range masks
+    # Apply power range masks
     vmin = min_db if min_db is not None else np.min(spectrogram_data_db)
     vmax = max_db if max_db is not None else np.max(spectrogram_data_db)
 
