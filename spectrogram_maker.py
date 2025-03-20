@@ -71,7 +71,7 @@ def normalize_image(spec_db, min_db=None, max_db=None):
     norm = (spec_db_clipped - min_db) / (max_db - min_db) * 255
     return norm.astype(np.uint8)
 
-def save_spectrogram_image(signal, sample_rate, output_file,
+def save_spectrogram_image(signal, sample_rate, image_file_path,
                            window_size=1024, hop_size=512,
                            min_hz=None, max_hz=None,
                            min_db=None, max_db=None):
@@ -115,8 +115,8 @@ def save_spectrogram_image(signal, sample_rate, output_file,
     img = img.transpose(Image.FLIP_TOP_BOTTOM)
 
     # Save the image
-    img.save(output_file)
-    print(f"Spectrogram image saved to '{output_file}'.")
+    img.save(image_file_path)
+    print(f"Spectrogram image saved to '{image_file_path}'.")
 
 def process_wav_file(audio_file_path, image_file_path, window_size=1024, hop_size=512,
                      min_hz=None, max_hz=None, min_db=None, max_db=None):
