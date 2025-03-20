@@ -4,8 +4,8 @@ from PIL import Image
 
 def draw_spectrogram(audio_file_path, image_file_path,
                      min_hz=None, max_hz=None, min_db=None, max_db=None):
-    y, sample_rate = librosa.load(audio_file_path, sr=None)
-    amplitude_array = librosa.stft(y)
+    data, sample_rate = librosa.load(audio_file_path, sr=None)
+    amplitude_array = librosa.stft(data)
     spectrogram, _ = librosa.magphase(amplitude_array)
     spectrogram_db = librosa.amplitude_to_db(spectrogram, ref=np.max)
     frequency_array = librosa.fft_frequencies(sr=sample_rate)
