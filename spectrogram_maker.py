@@ -1,39 +1,45 @@
-import librosa
 import numpy as np
-from PIL import Image
+import matplotlib.pyplot as plt
+from scipy.io import wavfile
+from scipy.signal import spectrogram
 
 def draw_spectrogram(audio_file_path, image_file_path,
                      min_hz=None, max_hz=None, min_db=None, max_db=None):
-    data, sample_rate = librosa.load(audio_file_path, sr=None)
-    amplitude_array = librosa.stft(data)
-    spectrogram, _ = librosa.magphase(amplitude_array)
-    spectrogram_db = librosa.amplitude_to_db(spectrogram, ref=np.max)
-    frequency_array = librosa.fft_frequencies(sr=sample_rate)
+    # calculate spectrogram
+    sample_rate, audio_data = wavfile.read(audio_file_path)
+    if audio_data.ndim > 1:
+        audio_data = np.mean(audio_data, axis=1)
+    sample_frequencies, segment_times, spectrogram_data = spectrogram(audio_data, fs=sample_rate)
 
-    if min_hz is None:
-        min_hz = frequency_array[0]
-    if max_hz is None:
-        max_hz = frequency_array[-1]
+    # apply frequency and power range masks
+    spectrogram_data_db = 10 * np.log10(spectrogram_data + 1e-10)
+    if min_hz is not None or max_hz is not None:
+        freq_mask = np.ones_like(sample_frequencies, dtype=bool)
+        if min_hz is not None:
+            freq_mask &= (sample_frequencies >= min_hz)
+        if max_hz is not None:
+            freq_mask &= (sample_frequencies <= max_hz)
+        sample_frequencies = sample_frequencies[freq_mask]
+        spectrogram_data_db = spectrogram_data_db[freq_mask, :]
+    if min_db is not None or max_db is not None:
+        vmin = min_db if min_db is not None else np.min(spectrogram_data_db)
+        vmax = max_db if max_db is not None else np.max(spectrogram_data_db)
+    else:
+        vmin, vmax = np.min(spectrogram_data_db), np.max(spectrogram_data_db)
 
-    if min_db is None:
-        min_db = np.min(spectrogram_db)
-    if max_db is None:
-        max_db = np.max(spectrogram_db)
+    # draw spectrogram
+    plt.figure(figsize=(10, 5))
+    plt.imshow(spectrogram_data_db, aspect='auto', origin='lower',
+               extent=[segment_times.min(), segment_times.max(), sample_frequencies.min(), sample_frequencies.max()],
+               cmap='jet', vmin=vmin, vmax=vmax)
+    plt.colorbar(label='Power (dB)')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Frequency (Hz)')
+    plt.title('Spectrogram')
 
-    frequency_mask = (frequency_array >= min_hz) & (frequency_array <= max_hz)
-    spectrogram_db_filtered = spectrogram_db[frequency_mask, :]
-    spectrogram_db_filtered = np.clip(spectrogram_db_filtered, min_db, max_db)
-    if spectrogram_db_filtered.size == 0:
-        raise ValueError("The specified range results in an empty spectrogram.")
+    # save image
+    plt.savefig(image_file_path, dpi=300, bbox_inches='tight')
+    plt.close()
 
-    # Normalize the spectrogram to the range [0, 255] for image representation
-    spectrogram_db_normalized = 255 * (spectrogram_db_filtered - min_db) / (max_db - min_db)
-    spectrogram_db_normalized = spectrogram_db_normalized.astype(np.uint8)
-
-    # Flip the array vertically to match image coordinate system
-    spectrogram_db_flipped = np.flipud(spectrogram_db_normalized)
-
-    image = Image.fromarray(spectrogram_db_flipped)
-    image.save(image_file_path)
-
-draw_spectrogram('record.wav', 'spectrogram.png', min_db=-35, max_hz=2500)
+if __name__ == '__main__':
+    draw_spectrogram('record.wav', 'spectrogram.png')
