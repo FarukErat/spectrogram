@@ -5,13 +5,13 @@ from scipy.signal import spectrogram
 
 def draw_spectrogram(audio_file_path, image_file_path,
                      min_hz=None, max_hz=None, min_db=None, max_db=None):
-    # calculate spectrogram
+    # Calculate spectrogram
     sample_rate, audio_data = wavfile.read(audio_file_path)
     if audio_data.ndim > 1:
         audio_data = np.mean(audio_data, axis=1)
     sample_frequencies, segment_times, spectrogram_data = spectrogram(audio_data, fs=sample_rate)
 
-    # apply frequency range masks
+    # Apply frequency range masks
     spectrogram_data_db = 10 * np.log10(spectrogram_data + 1e-10)
     freq_mask = np.ones_like(sample_frequencies, dtype=bool)
     if min_hz is not None:
