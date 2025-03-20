@@ -118,7 +118,7 @@ def save_spectrogram_image(signal, sample_rate, output_file,
     img.save(output_file)
     print(f"Spectrogram image saved to '{output_file}'.")
 
-def process_wav_file(filename, output_file, window_size=1024, hop_size=512,
+def process_wav_file(audio_file_path, image_file_path, window_size=1024, hop_size=512,
                      min_hz=None, max_hz=None, min_db=None, max_db=None):
     """
     Reads a WAV file, computes its spectrogram with optional frequency and dB scaling,
@@ -134,7 +134,7 @@ def process_wav_file(filename, output_file, window_size=1024, hop_size=512,
         min_db (float or None): Minimum dB value for scaling.
         max_db (float or None): Maximum dB value for scaling.
     """
-    sample_rate, data = wav.read(filename)
+    sample_rate, data = wav.read(audio_file_path)
 
     # If stereo (or multi-channel), take only the first channel.
     if data.ndim > 1:
@@ -145,8 +145,8 @@ def process_wav_file(filename, output_file, window_size=1024, hop_size=512,
         max_val = np.iinfo(data.dtype).max
         data = data.astype(np.float32) / max_val
 
-    print(f"Processing '{filename}' (sample rate: {sample_rate} Hz)...")
-    save_spectrogram_image(data, sample_rate, output_file, window_size, hop_size,
+    print(f"Processing '{audio_file_path}' (sample rate: {sample_rate} Hz)...")
+    save_spectrogram_image(data, sample_rate, image_file_path, window_size, hop_size,
                            min_hz, max_hz, min_db, max_db)
 
 if __name__ == "__main__":
