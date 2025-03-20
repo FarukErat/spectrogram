@@ -40,4 +40,4 @@ def draw_spectrogram(audio_file_path, image_file_path,
     plt.close()
 
 if __name__ == '__main__':
-    draw_spectrogram('record.wav', 'spectrogram.png')
+    draw_spectrogram('record.wav', 'spectrogram.png', max_hz=2500, min_db=-60)
