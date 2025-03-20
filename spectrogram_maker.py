@@ -11,21 +11,19 @@ def draw_spectrogram(audio_file_path, image_file_path,
         audio_data = np.mean(audio_data, axis=1)
     sample_frequencies, segment_times, spectrogram_data = spectrogram(audio_data, fs=sample_rate)
 
-    # apply frequency and power range masks
+    # apply frequency range masks
     spectrogram_data_db = 10 * np.log10(spectrogram_data + 1e-10)
-    if min_hz is not None or max_hz is not None:
-        freq_mask = np.ones_like(sample_frequencies, dtype=bool)
-        if min_hz is not None:
-            freq_mask &= (sample_frequencies >= min_hz)
-        if max_hz is not None:
-            freq_mask &= (sample_frequencies <= max_hz)
-        sample_frequencies = sample_frequencies[freq_mask]
-        spectrogram_data_db = spectrogram_data_db[freq_mask, :]
-    if min_db is not None or max_db is not None:
-        vmin = min_db if min_db is not None else np.min(spectrogram_data_db)
-        vmax = max_db if max_db is not None else np.max(spectrogram_data_db)
-    else:
-        vmin, vmax = np.min(spectrogram_data_db), np.max(spectrogram_data_db)
+    freq_mask = np.ones_like(sample_frequencies, dtype=bool)
+    if min_hz is not None:
+        freq_mask &= (sample_frequencies >= min_hz)
+    if max_hz is not None:
+        freq_mask &= (sample_frequencies <= max_hz)
+    sample_frequencies = sample_frequencies[freq_mask]
+    spectrogram_data_db = spectrogram_data_db[freq_mask, :]
+
+    # apply power range masks
+    vmin = min_db if min_db is not None else np.min(spectrogram_data_db)
+    vmax = max_db if max_db is not None else np.max(spectrogram_data_db)
 
     # draw spectrogram
     plt.figure(figsize=(10, 5))
