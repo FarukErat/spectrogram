@@ -23,6 +23,8 @@ def draw_spectrogram(audio_file_path, image_file_path,
     frequency_mask = (frequency_array >= min_hz) & (frequency_array <= max_hz)
     spectrogram_db_filtered = spectrogram_db[frequency_mask, :]
     spectrogram_db_filtered = np.clip(spectrogram_db_filtered, min_db, max_db)
+    if spectrogram_db_filtered.size == 0:
+        raise ValueError("The specified range results in an empty spectrogram.")
 
     # Normalize the spectrogram to the range [0, 255] for image representation
     spectrogram_db_normalized = 255 * (spectrogram_db_filtered - min_db) / (max_db - min_db)
