@@ -25,6 +25,16 @@ def draw_spectrogram(audio_file_path, image_file_path,
     vmin = min_db if min_db is not None else np.min(spectrogram_data_db)
     vmax = max_db if max_db is not None else np.max(spectrogram_data_db)
 
+    # Calculate duration and frequency range
+    duration = segment_times.max()
+    freq_range = sample_frequencies.max() - sample_frequencies.min()
+    scale_time = 10  # 10 seconds per inch width
+    scale_freq = 1000  # 1000 Hz per inch height
+    fig_width = duration / scale_time
+    fig_height = freq_range / scale_freq
+    fig_width = max(fig_width, 1)
+    fig_height = max(fig_height, 1)
+
     # Draw spectrogram
     plt.figure(figsize=(fig_width, fig_height))
     plt.imshow(spectrogram_data_db, aspect='auto', origin='lower',
