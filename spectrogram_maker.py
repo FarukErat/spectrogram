@@ -25,8 +25,8 @@ def draw_spectrogram(audio_file_path, image_file_path,
     vmin = min_db if min_db is not None else np.min(spectrogram_data_db)
     vmax = max_db if max_db is not None else np.max(spectrogram_data_db)
 
-    # draw spectrogram
-    plt.figure(figsize=(10, 5))
+    # Draw spectrogram
+    plt.figure(figsize=(fig_width, fig_height))
     plt.imshow(spectrogram_data_db, aspect='auto', origin='lower',
                extent=[segment_times.min(), segment_times.max(), sample_frequencies.min(), sample_frequencies.max()],
                cmap='jet', vmin=vmin, vmax=vmax)
@@ -35,7 +35,7 @@ def draw_spectrogram(audio_file_path, image_file_path,
     plt.ylabel('Frequency (Hz)')
     plt.title('Spectrogram')
 
-    # save image
+    # Save image
     plt.savefig(image_file_path, dpi=300, bbox_inches='tight')
     plt.close()
 
