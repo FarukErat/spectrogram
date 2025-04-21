@@ -3,9 +3,9 @@ from scipy.io import wavfile
 from scipy.signal import spectrogram
 from PIL import Image, ImageOps
 
-def plot_spectrogram(audio_file_path, image_file_path,
-                     nperseg=1024, noverlap=512,
-                     invert=False, flip_y=True):
+def plot_spectrogram(audio_file_path:str, image_file_path:str,
+                     nperseg:int=1024, noverlap:int=512,
+                     invert:bool=False, flip_y:bool=True):
     sample_rate, audio_data = wavfile.read(audio_file_path)
     if audio_data.ndim > 1:
         audio_data = audio_data[:, 0]
