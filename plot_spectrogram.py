@@ -6,25 +6,21 @@ from PIL import Image, ImageOps
 def plot_spectrogram(audio_file_path, image_file_path,
                      nperseg=1024, noverlap=512,
                      invert=False, flip_y=True):
-    # 1. Read
-    fs, data = wavfile.read(audio_file_path)
-    if data.ndim > 1:
-        data = data[:, 0]
+    sample_rate, audio_data = wavfile.read(audio_file_path)
+    if audio_data.ndim > 1:
+        audio_data = audio_data[:, 0]
 
-    # 2. Spectrogram
-    f, t, Sxx = spectrogram(data, fs=fs,
+    sample_frequencies, segment_times, spectrogram_data = spectrogram(audio_data, fs=sample_rate,
                              window='hann',
                              nperseg=nperseg,
                              noverlap=noverlap,
                              scaling='spectrum')
-    Sxx_dB = 10 * np.log10(Sxx + 1e-10)
+    spectrogram_data_db = 10 * np.log10(spectrogram_data + 1e-10)
 
-    # 3. Normalize
-    S = Sxx_dB - Sxx_dB.min()
+    S = spectrogram_data_db - spectrogram_data_db.min()
     S *= (255.0 / S.max())
     S = S.astype(np.uint8)
 
-    # 4. Image
     img = Image.fromarray(S)
     if flip_y:
         img = img.transpose(Image.FLIP_TOP_BOTTOM)
@@ -32,4 +28,3 @@ def plot_spectrogram(audio_file_path, image_file_path,
         img = ImageOps.invert(img)
 
     img.save(image_file_path)
-    print(f"Spectrogram saved to {image_file_path}")
